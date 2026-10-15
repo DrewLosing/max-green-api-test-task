@@ -1,0 +1,75 @@
+/* Design tokens taken from the dark theme of web.max.ru */
+:root {
+  --background-surface: #0f0f12;
+  --background-primary: #17181c;
+  --background-secondary: #25262d;
+  --background-tertiary: #ffffff17;
+  --background-hover: #ffffff0d;
+  --background-themed-fade: #016fe729;
+  --chat-background: #18151d;
+  --chat-pattern: #016fe733;
+
+  --bubble-outgoing: #2c3368;
+  --bubble-incoming: #25262d;
+
+  --text-primary: #fff;
+  --text-secondary: #fffc;
+  --text-tertiary: #ffffffa3;
+  --text-mute: #fff6;
+  --text-themed: #016fe7;
+  --text-negative: #ce4257;
+
+  --accent: #016fe7;
+  --accent-hover: #1a7ef0;
+  --divider: #ffffff1f;
+  --input-background: #ffffff17;
+  --stroke-themed: #016fe7;
+
+  --radius-card: 28px;
+  --radius-control: 24px;
+
+  color-scheme: dark;
+  font-family: -apple-system, system-ui, Roboto, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-primary);
+  background: var(--background-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+/* Text fields highlight their border on focus instead. */
+:focus-visible:not(input, textarea) {
+  outline: 2px solid var(--stroke-themed);
+  outline-offset: 2px;
+}

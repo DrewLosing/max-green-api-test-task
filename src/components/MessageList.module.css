@@ -1,0 +1,89 @@
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Same message column width as web.max.ru */
+  max-width: 791px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.empty {
+  width: fit-content;
+  margin: 40% auto 0;
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: var(--background-tertiary);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.incoming,
+.outgoing {
+  display: flex;
+}
+
+.outgoing {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: min(75%, 560px);
+  padding: 7px 12px 6px;
+  border-radius: 18px;
+  overflow-wrap: anywhere;
+}
+
+.incoming .bubble {
+  border-bottom-left-radius: 6px;
+  background: var(--bubble-incoming);
+}
+
+.outgoing .bubble {
+  border-bottom-right-radius: 6px;
+  background: var(--bubble-outgoing);
+}
+
+.author {
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-themed);
+}
+
+.text {
+  white-space: pre-wrap;
+}
+
+/* Floats into the last line of text when there is room, otherwise wraps below it. */
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  float: right;
+  margin: 6px 0 -4px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+
+.status {
+  flex-shrink: 0;
+}
+
+.status[data-status='read'] {
+  color: #6eb4ff;
+}
+
+.status[data-status='failed'] {
+  color: var(--text-negative);
+}

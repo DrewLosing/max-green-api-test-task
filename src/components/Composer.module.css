@@ -1,0 +1,58 @@
+.composer {
+  flex-shrink: 0;
+  padding: 8px 16px 16px;
+}
+
+.inner {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 791px;
+  margin: 0 auto;
+}
+
+.input {
+  flex: 1;
+  min-height: 48px;
+  max-height: 180px;
+  padding: 14px 18px;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-control);
+  background: var(--background-primary);
+  line-height: 20px;
+  resize: none;
+  outline: none;
+  /* Grows with the text where supported; otherwise scrolls inside one line. */
+  field-sizing: content;
+}
+
+.input:focus {
+  border-color: var(--stroke-themed);
+}
+
+.input::placeholder {
+  color: var(--text-mute);
+}
+
+.send {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  transition:
+    background-color 0.15s,
+    opacity 0.15s;
+}
+
+.send:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.send:disabled {
+  opacity: 0.4;
+}
