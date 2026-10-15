@@ -4,6 +4,8 @@
 
 Тестовое задание на должность «Фронтенд разработчик React».
 
+**Демо:** https://drewlosing.github.io/max-green-api-test-task/
+
 | Вход | Чат | Мобильная версия |
 | --- | --- | --- |
 | ![Вход](docs/screenshots/login.png) | ![Чат](docs/screenshots/chat.png) | ![Мобильная версия](docs/screenshots/mobile-chat.png) |
