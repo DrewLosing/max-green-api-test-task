@@ -20,6 +20,10 @@ export interface Chat {
   chatId: string
   phone: string | null
   name: string
+  /** From the MAX profile; empty when the contact has none. */
+  avatarUrl?: string
+  /** CheckAccount found no MAX account for the phone. */
+  unregistered?: boolean
   messages: Message[]
   unread: number
   createdAt: number
@@ -44,4 +48,6 @@ export type ChatEvent =
       chatId: string
       messageId: string
       status: MessageStatus
+      /** When the message was delivered or read, unix time, ms. */
+      timestamp: number
     }

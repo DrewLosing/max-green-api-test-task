@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { UserIcon } from './icons'
 import styles from './Avatar.module.css'
 
@@ -31,9 +32,12 @@ interface AvatarProps {
   /** Picks the gradient, so a chat keeps its color when renamed. */
   seed: string
   size: number
+  /** Profile photo; initials show while it loads and if it fails. */
+  src?: string
 }
 
-export function Avatar({ name, seed, size }: AvatarProps) {
+export function Avatar({ name, seed, size, src }: AvatarProps) {
+  const [brokenSrc, setBrokenSrc] = useState<string>()
   const [from, to] = GRADIENTS[hash(seed) % GRADIENTS.length]
   const letters = initials(name)
   return (
@@ -48,6 +52,15 @@ export function Avatar({ name, seed, size }: AvatarProps) {
       aria-hidden="true"
     >
       {letters ?? <UserIcon width={size * 0.5} height={size * 0.5} />}
+      {src && src !== brokenSrc && (
+        <img
+          className={styles.image}
+          src={src}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setBrokenSrc(src)}
+        />
+      )}
     </span>
   )
 }

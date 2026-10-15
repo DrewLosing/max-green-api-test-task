@@ -3,10 +3,13 @@ import type { Chat, ChatEvent, ChatState, Message, MessageStatus } from './types
 
 export type ChatAction =
   | { type: 'chatOpened'; phone: string; now: number }
+  /** CheckAccount result: the MAX user id of the phone, or null if it has no account. */
+  | { type: 'chatResolved'; phone: string; chatId: string | null }
+  | { type: 'contactLoaded'; chatId: string; name: string; avatarUrl: string }
   | { type: 'chatSelected'; key: string | null }
   | { type: 'messageQueued'; key: string; message: Message }
-  | { type: 'messageSent'; key: string; localId: string; idMessage: string }
-  | { type: 'messageFailed'; key: string; localId: string }
+  | { type: 'messageSent'; localId: string; idMessage: string }
+  | { type: 'messageFailed'; localId: string }
   | { type: 'eventReceived'; event: ChatEvent }
 
 export const initialChatState: ChatState = { chats: [], activeKey: null }
@@ -28,6 +31,25 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { chats: [...state.chats, chat], activeKey: chat.key }
     }
 
+    case 'chatResolved': {
+      const { chatId } = action
+      const chat = state.chats.find((c) => c.phone === action.phone)
+      if (!chat) return state
+      if (!chatId) return updateChat(state, chat.key, (c) => ({ ...c, unregistered: true }))
+      const twin = state.chats.find((c) => c.key !== chat.key && c.chatId === chatId)
+      return twin ? mergeChat(state, chat, twin) : updateChat(state, chat.key, (c) => withChatId(c, chatId))
+    }
+
+    case 'contactLoaded':
+      return {
+        ...state,
+        chats: state.chats.map((chat) =>
+          chat.chatId === action.chatId
+            ? { ...chat, name: action.name || chat.name, avatarUrl: action.avatarUrl }
+            : chat,
+        ),
+      }
+
     case 'chatSelected':
       return selectChat(state, action.key)
 
@@ -37,8 +59,9 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         messages: insertMessage(chat.messages, action.message),
       }))
 
+    // The chat is found by the local id: it may have been merged while the request was in flight.
     case 'messageSent':
-      return updateChat(state, action.key, (chat) => {
+      return updateChatOf(state, action.localId, (chat) => {
         // The queue may deliver our own message back before sendMessage has responded.
         const alreadyReceived = chat.messages.some((m) => m.id === action.idMessage)
         const messages = alreadyReceived
@@ -50,7 +73,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       })
 
     case 'messageFailed':
-      return updateChat(state, action.key, (chat) => ({
+      return updateChatOf(state, action.localId, (chat) => ({
         ...chat,
         messages: chat.messages.map((m) => (m.id === action.localId ? { ...m, status: 'failed' } : m)),
       }))
@@ -105,14 +128,57 @@ function applyMessage(state: ChatState, event: MessageEvent): ChatState {
 }
 
 function applyStatus(state: ChatState, event: StatusEvent): ChatState {
-  const owner = findChatByMessageId(state.chats, event.messageId)
+  const owner =
+    findChatByMessageId(state.chats, event.messageId) ?? state.chats.find((chat) => chat.chatId === event.chatId)
   if (!owner) return state
-  return updateChat(state, owner.key, (chat) => ({
-    ...withChatId(chat, event.chatId),
-    messages: chat.messages.map((m) =>
-      m.id === event.messageId ? { ...m, status: mergeStatus(m.status, event.status) } : m,
-    ),
-  }))
+  const chat = withChatId(owner, event.chatId)
+  const messages = markStatus(owner.messages, event)
+  if (chat === owner && messages === owner.messages) return state
+  return updateChat(state, owner.key, () => ({ ...chat, messages }))
+}
+
+/** Leeway for the difference between the browser clock and GREEN-API's when matching by time. */
+const CLOCK_SKEW_MS = 5_000
+
+/**
+ * MAX tracks delivery and reading per chat: when a message is read, so is everything before it,
+ * and a status may come for the latest message only. The status idMessage can also differ from
+ * the one SendMessage returned; then the status covers what was sent before the event.
+ */
+function markStatus(messages: Message[], event: StatusEvent): Message[] {
+  const target = messages.findLastIndex((m) => m.id === event.messageId)
+
+  if (event.status === 'failed') {
+    // A failure concerns a single message, and there is no telling which one without the id.
+    return target === -1 ? messages : messages.with(target, { ...messages[target], status: 'failed' })
+  }
+
+  const last =
+    target !== -1
+      ? target
+      : messages.findLastIndex((m) => m.outgoing && m.timestamp <= event.timestamp + CLOCK_SKEW_MS)
+  if (last === -1) return messages
+
+  return messages.map((m, index) => {
+    if (index > last || !m.outgoing) return m
+    const status = mergeStatus(m.status, event.status)
+    return status === m.status ? m : { ...m, status }
+  })
+}
+
+/** A contact with a hidden number may already have a chat under their MAX id: keep just that one. */
+function mergeChat(state: ChatState, from: Chat, into: Chat): ChatState {
+  const activeKey = state.activeKey === from.key ? into.key : state.activeKey
+  const merged: Chat = {
+    ...into,
+    phone: into.phone ?? from.phone,
+    messages: from.messages.reduce(insertMessage, into.messages),
+    unread: activeKey === into.key ? 0 : into.unread + from.unread,
+  }
+  return {
+    activeKey,
+    chats: state.chats.filter((chat) => chat.key !== from.key).map((chat) => (chat.key === into.key ? merged : chat)),
+  }
 }
 
 function selectChat(state: ChatState, key: string | null): ChatState {
@@ -124,6 +190,11 @@ function selectChat(state: ChatState, key: string | null): ChatState {
 
 function updateChat(state: ChatState, key: string, update: (chat: Chat) => Chat): ChatState {
   return { ...state, chats: state.chats.map((chat) => (chat.key === key ? update(chat) : chat)) }
+}
+
+function updateChatOf(state: ChatState, messageId: string, update: (chat: Chat) => Chat): ChatState {
+  const chat = findChatByMessageId(state.chats, messageId)
+  return chat ? updateChat(state, chat.key, update) : state
 }
 
 function findChatByMessageId(chats: Chat[], id: string): Chat | undefined {

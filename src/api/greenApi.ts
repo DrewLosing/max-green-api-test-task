@@ -1,4 +1,6 @@
 import type {
+  CheckAccountResponse,
+  ContactInfo,
   Credentials,
   InstanceState,
   ReceivedNotification,
@@ -57,17 +59,37 @@ export function createGreenApi({ apiUrl, idInstance, apiTokenInstance }: Credent
     return (text ? JSON.parse(text) : null) as T
   }
 
+  function post<T>(method: string, body: object, signal?: AbortSignal): Promise<T> {
+    return request<T>(method, '', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal,
+    })
+  }
+
   return {
     getStateInstance(signal?: AbortSignal) {
       return request<{ stateInstance: InstanceState }>('getStateInstance', '', { signal })
     },
 
     sendMessage(chatId: string, message: string) {
-      return request<SendMessageResponse>('sendMessage', '', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId, message }),
-      })
+      return post<SendMessageResponse>('sendMessage', { chatId, message })
+    },
+
+    /** Finds the MAX account of a phone number. GREEN-API throttles frequent checks. */
+    checkAccount(phone: string) {
+      return post<CheckAccountResponse>('checkAccount', { phoneNumber: Number(phone) })
+    },
+
+    /** Profile of an individual chat; needs the MAX user id, not `phone@c.us`. */
+    getContactInfo(chatId: string, signal?: AbortSignal) {
+      return post<ContactInfo>('getContactInfo', { chatId }, signal)
+    },
+
+    /** Marks the chat as read, so the contact sees read ticks. */
+    readChat(chatId: string) {
+      return post<{ setRead: boolean }>('readChat', { chatId })
     },
 
     /** Long-polls the queue for up to `timeoutSec` (5–60) seconds. */

@@ -20,12 +20,17 @@ export function ChatWindow({ chat, onSend, onBack }: ChatWindowProps) {
         <button className={styles.back} type="button" onClick={onBack} aria-label="К списку чатов">
           <BackIcon />
         </button>
-        <Avatar name={chat.name} seed={chat.key} size={40} />
+        <Avatar name={chat.name} seed={chat.key} size={40} src={chat.avatarUrl} />
         <div className={styles.titles}>
           <h2 className={styles.name}>{chat.name}</h2>
           {phone && phone !== chat.name && <p className={styles.subtitle}>{phone}</p>}
         </div>
       </header>
+      {chat.unregistered && (
+        <p className={styles.notice} role="status">
+          Номер не зарегистрирован в MAX — сообщения не будут доставлены
+        </p>
+      )}
       <MessageList messages={chat.messages} />
       <Composer onSend={onSend} />
     </section>

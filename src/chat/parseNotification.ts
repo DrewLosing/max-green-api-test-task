@@ -68,5 +68,11 @@ function parseMessage(body: MessageWebhook, outgoing: boolean): ChatEvent | null
 function parseStatus(body: StatusWebhook): ChatEvent | null {
   const status = STATUSES.get(body.status)
   if (!status || !body.idMessage) return null
-  return { type: 'status', chatId: body.chatId, messageId: body.idMessage, status }
+  return {
+    type: 'status',
+    chatId: body.chatId,
+    messageId: body.idMessage,
+    status,
+    timestamp: body.timestamp * 1000,
+  }
 }

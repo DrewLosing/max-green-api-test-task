@@ -89,7 +89,13 @@ describe('parseNotification', () => {
         status: value,
       } as WebhookBody)
 
-    expect(status('read')).toEqual({ type: 'status', chatId: '10000000', messageId: 'msg-1', status: 'read' })
+    expect(status('read')).toEqual({
+      type: 'status',
+      chatId: '10000000',
+      messageId: 'msg-1',
+      status: 'read',
+      timestamp: 1000,
+    })
     expect(status('noAccount')).toMatchObject({ status: 'failed' })
     expect(status('somethingNew')).toBeNull()
   })

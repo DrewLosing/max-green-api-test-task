@@ -57,6 +57,19 @@
   color: var(--text-tertiary);
 }
 
+.notice {
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 12px auto 0;
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: #ce425724;
+  font-size: 13px;
+  line-height: 18px;
+  color: #ff8a98;
+  text-align: center;
+}
+
 @media (max-width: 720px) {
   .back {
     display: grid;

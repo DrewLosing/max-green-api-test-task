@@ -17,6 +17,22 @@ export interface SendMessageResponse {
   idMessage: string
 }
 
+export interface CheckAccountResponse {
+  exist: boolean
+  /** MAX user id; empty when the number has no account. */
+  chatId: string
+}
+
+/** Only the fields this app reads; the API sends more. */
+export interface ContactInfo {
+  /** Empty when the contact has no avatar or hides it. */
+  avatar: string
+  /** Name from the MAX profile. */
+  name: string
+  /** Name from the address book of the instance's phone. */
+  contactName: string
+}
+
 /** Only the fields this app reads; the API sends more. */
 export interface WebhookBody {
   typeWebhook: string

@@ -86,7 +86,7 @@ function ChatListItem({ chat, active, onSelect }: ChatListItemProps) {
       onClick={onSelect}
       aria-current={active ? 'true' : undefined}
     >
-      <Avatar name={chat.name} seed={chat.key} size={54} />
+      <Avatar name={chat.name} seed={chat.key} size={54} src={chat.avatarUrl} />
       <span className={styles.itemBody}>
         <span className={styles.itemRow}>
           <span className={styles.itemName}>{chat.name}</span>
